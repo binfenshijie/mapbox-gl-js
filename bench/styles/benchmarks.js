@@ -18,13 +18,14 @@ function register(Benchmark, locations, options) {
 
     const benchmark = {
         name: Benchmark.name,
-        versions: []
+        versions: [],
+        benches: []
     };
 
     if (options) Object.assign(benchmark, options);
 
     urls.forEach(style => {
-        benchmark.bench = new Benchmark(style, locations);
+        benchmark.benches.push(new Benchmark(style, locations));
         benchmark.versions.push({
             name: style,
             status: 'waiting',
@@ -61,14 +62,13 @@ promise = promise.then(() => {
     // URL has been set up, which happens after this module is executed.
     getWorkerPool().acquire(-1);
 });
-
 benchmarks.forEach(bench => {
-    bench.versions.forEach(version => {
+    bench.versions.forEach((version, i) => {
         promise = promise.then(() => {
             version.status = 'running';
             updateUI(benchmarks);
 
-            return bench.bench.run()
+            return bench.benches[i].run()
                 .then(measurements => {
                     // scale measurements down by iteration count, so that
                     // they represent (average) time for a single iteration
